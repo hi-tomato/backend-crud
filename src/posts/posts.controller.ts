@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import type { JwtPayload } from '../auth/types/jwt-payload.type';
 import { CursorPaginationDto } from '../common/dto/cursor-pagination.dto';
 import { OffsetPaginationDto } from '../common/dto/offset-pagination.dto';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -27,10 +28,7 @@ export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Post()
-  createPost(
-    @Body() dto: CreatePostDto,
-    @CurrentUser() user: { userId: number },
-  ) {
+  createPost(@Body() dto: CreatePostDto, @CurrentUser() user: JwtPayload) {
     return this.postsService.createPost(user.userId, dto);
   }
 
@@ -53,7 +51,7 @@ export class PostsController {
   updatePostById(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdatePostDto,
-    @CurrentUser() user: { userId: number },
+    @CurrentUser() user: JwtPayload,
   ) {
     return this.postsService.updatePostById(id, user.userId, dto);
   }
