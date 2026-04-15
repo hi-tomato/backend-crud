@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { FindOptionsRelations, Like, Repository } from 'typeorm';
+import { FindOptionsRelations, Like, ObjectLiteral, Repository } from 'typeorm';
+import { OrderType } from './const/enum';
+import { CursorPaginationDto } from './dto/cursor-pagination.dto';
 import { OffsetPaginationDto } from './dto/offset-pagination.dto';
 
 @Injectable()
@@ -43,6 +45,63 @@ export class CommonService {
         limit,
         lastPage,
         hasNextPage: page < lastPage,
+      },
+    };
+  }
+
+  async cursorPaginate<T>(
+    dto: CursorPaginationDto,
+    repository: Repository<ObjectLiteral & T>,
+    relations?: string[],
+  ) {
+    // 1) QueryBuilder 생성
+    //    createQueryBuilder('entity')
+    //    orderBy('entity.id', __order)
+    //    take(__limit + 1)
+    const queryBuilder = repository
+      .createQueryBuilder('entity')
+      .orderBy('entity.id', dto.__order)
+      .take(dto.__limit + 1);
+
+    // 2) relations forEach로 JOIN
+    //    relations?.forEach((rel) => {
+    //      qb.leftJoinAndSelect(`entity.${rel}`, rel)
+    //    })
+    relations?.forEach((rel) => {
+      queryBuilder.leftJoinAndSelect(`entity.${rel}`, rel);
+    });
+
+    // 3) cursor 있을 때만 WHERE 추가
+    //    DESC → WHERE entity.id < :cursor
+    //    ASC  → WHERE entity.id > :cursor
+    if (dto.__cursor) {
+      if (dto.__order === OrderType.DESC) {
+        queryBuilder.where('entity.id < :cursor', { cursor: dto.__cursor });
+      }
+      if (dto.__order === OrderType.ASC) {
+        queryBuilder.where('entity.id > :cursor', { cursor: dto.__cursor });
+      }
+    }
+
+    // 4) getMany() 실행
+    const results = await queryBuilder.getMany();
+
+    // 5) limit+1 트릭으로 hasNextPage 판단
+    const hasNextPage = results.length > dto.__limit;
+
+    const data = hasNextPage ? results.slice(0, dto.__limit) : results;
+
+    // 6) nextCursor = data[data.length-1].id (마지막 항목)
+    const nextCursor = hasNextPage ? data[data.length - 1].id : null;
+
+    // 7) 반환
+    //    { data, meta: { count, nextCursor, hasNextPage } }
+    return {
+      data,
+      meta: {
+        count: data.length,
+        nextCursor,
+        hasNextPage,
       },
     };
   }

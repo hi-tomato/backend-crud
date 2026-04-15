@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CursorPaginationDto } from '../common/dto/cursor-pagination.dto';
 import { OffsetPaginationDto } from '../common/dto/offset-pagination.dto';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -33,14 +34,19 @@ export class PostsController {
     return this.postsService.createPost(user.userId, dto);
   }
 
-  @Get()
-  getPosts(@Query() dto: OffsetPaginationDto) {
-    return this.postsService.getPosts(dto);
+  @Get('cursor')
+  getPostsCursor(@Query() dto: CursorPaginationDto) {
+    return this.postsService.getPostsCursor(dto);
   }
 
   @Get(':id')
   getPostById(@Param('id', ParseIntPipe) id: number) {
     return this.postsService.getPostById(id);
+  }
+
+  @Get()
+  getPosts(@Query() dto: OffsetPaginationDto) {
+    return this.postsService.getPosts(dto);
   }
 
   @Patch(':id')

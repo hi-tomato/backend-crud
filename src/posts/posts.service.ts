@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CommonService } from '../common/common.service';
+import { CursorPaginationDto } from '../common/dto/cursor-pagination.dto';
 import { OffsetPaginationDto } from '../common/dto/offset-pagination.dto';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -29,10 +30,17 @@ export class PostsService {
   }
 
   getPosts(dto: OffsetPaginationDto) {
-    // ! Case1: 작성한 포스트를 페이지네이션 처리하여 반환하는 방식
     return this.commonService.paginate<PostModel>(dto, this.postsRepository, {
       author: true,
     });
+  }
+
+  getPostsCursor(dto: CursorPaginationDto) {
+    return this.commonService.cursorPaginate<PostModel>(
+      dto,
+      this.postsRepository,
+      ['author'],
+    );
   }
 
   getPostById(postId: number) {
