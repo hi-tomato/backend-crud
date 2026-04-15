@@ -1,0 +1,62 @@
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OffsetPaginationDto } from '../common/dto/offset-pagination.dto';
+import { CreatePostDto } from './dto/create-post.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
+import { PostsService } from './posts.service';
+
+@UseGuards(JwtAuthGuard)
+@UseInterceptors(ClassSerializerInterceptor)
+@Controller('posts')
+export class PostsController {
+  constructor(private readonly postsService: PostsService) {}
+
+  @Post()
+  createPost(
+    @Body() dto: CreatePostDto,
+    @CurrentUser() user: { userId: number },
+  ) {
+    return this.postsService.createPost(user.userId, dto);
+  }
+
+  @Get()
+  getPosts(@Query() dto: OffsetPaginationDto) {
+    return this.postsService.getPosts(dto);
+  }
+
+  @Get(':id')
+  getPostById(@Param('id', ParseIntPipe) id: number) {
+    return this.postsService.getPostById(id);
+  }
+
+  @Patch(':id')
+  updatePostById(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdatePostDto,
+    @CurrentUser() user: { userId: number },
+  ) {
+    return this.postsService.updatePostById(id, user.userId, dto);
+  }
+
+  @Delete(':id')
+  deletePostById(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: { userId: number },
+  ) {
+    return this.postsService.deletePostById(id, user.userId);
+  }
+}
