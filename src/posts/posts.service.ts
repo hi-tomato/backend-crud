@@ -20,6 +20,25 @@ export class PostsService {
     private readonly commonService: CommonService,
   ) {}
 
+  async findPostOrFail(postId: number): Promise<PostModel> {
+    const post = await this.postsRepository.findOne({
+      where: { id: postId },
+      relations: { author: true },
+    });
+
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    return post;
+  }
+
+  assertPostOwner(post: PostModel, authorId: number) {
+    if (post.author.id !== authorId) {
+      throw new ForbiddenException('You are not the author of this post');
+    }
+  }
+
   async createPost(authorId: number, dto: CreatePostDto) {
     const newPost = this.postsRepository.create({
       ...dto,
@@ -44,44 +63,23 @@ export class PostsService {
   }
 
   getPostById(postId: number) {
-    return this.postsRepository.findOne({
-      where: { id: postId },
-      relations: { author: true },
-    });
+    return this.findPostOrFail(postId);
   }
 
   async updatePostById(postId: number, authorId: number, dto: UpdatePostDto) {
-    const post = await this.postsRepository.findOne({
-      where: { id: postId },
-      relations: { author: true },
-    });
+    const post = await this.findPostOrFail(postId);
 
-    if (!post) {
-      throw new NotFoundException('Post not found');
-    }
+    this.assertPostOwner(post, authorId);
 
-    if (post.author.id !== authorId) {
-      throw new ForbiddenException('You are not the author of this post');
-    }
+    const updatedPost = this.postsRepository.merge(post, dto);
 
-    Object.assign(post, dto);
-
-    return await this.postsRepository.save(post);
+    return await this.postsRepository.save(updatedPost);
   }
 
   async deletePostById(postId: number, authorId: number) {
-    const post = await this.postsRepository.findOne({
-      where: { id: postId },
-      relations: { author: true },
-    });
+    const post = await this.findPostOrFail(postId);
 
-    if (!post) {
-      throw new NotFoundException('Post not found');
-    }
-
-    if (post.author.id !== authorId) {
-      throw new ForbiddenException('You are not the author of this post');
-    }
+    this.assertPostOwner(post, authorId);
 
     return await this.postsRepository.delete(postId);
   }
