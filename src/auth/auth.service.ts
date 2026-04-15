@@ -5,6 +5,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
@@ -16,6 +17,7 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   generateTokens(userId: number, email: string) {
@@ -41,7 +43,10 @@ export class AuthService {
       throw new BadRequestException('입력하신 비밀번호가 일치하지 않습니다.');
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(
+      password,
+      this.configService.get<number>('BCRYPT_ROUNDS') ?? 10,
+    );
 
     const newUser = await this.usersService.create({
       name,
