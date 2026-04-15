@@ -56,6 +56,7 @@ export class CommonService {
     };
   }
 
+  /** 커서 페이지네이션 정보 반환 */
   async cursorPaginate<T>(
     dto: CursorPaginationDto,
     repository: Repository<ObjectLiteral & T>,
