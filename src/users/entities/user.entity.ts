@@ -3,8 +3,10 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { PostModel } from '../../posts/entities/post.entity';
 import { UserRole } from '../const/userRole';
 
 @Entity()
@@ -30,4 +32,7 @@ export class User {
 
   @Column({ default: UserRole.USER })
   role: UserRole = UserRole.USER;
+
+  @OneToMany(() => PostModel, (post) => post.author)
+  posts: PostModel[];
 }
