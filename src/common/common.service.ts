@@ -1,6 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { FindOptionsRelations, Like, ObjectLiteral, Repository } from 'typeorm';
+import {
+  FindOptionsOrder,
+  FindOptionsRelations,
+  FindOptionsWhere,
+  Like,
+  ObjectLiteral,
+  Repository,
+} from 'typeorm';
 import { OrderType } from './const/enum';
 import { CursorPaginationDto } from './dto/cursor-pagination.dto';
 import { OffsetPaginationDto } from './dto/offset-pagination.dto';
@@ -12,7 +19,7 @@ export class CommonService {
   /** 페이지네이션 정보 반환 */
   async paginate<T>(
     dto: OffsetPaginationDto,
-    repository: Repository<any>,
+    repository: Repository<ObjectLiteral & T>,
     relations?: FindOptionsRelations<T>,
   ) {
     const { page, limit, __orderBy, __order, __search } = dto;
@@ -30,9 +37,9 @@ export class CommonService {
       skip: (page - 1) * limit,
       order: {
         [__orderBy]: __order,
-      },
-      where,
-      relations,
+      } as FindOptionsOrder<ObjectLiteral & T>,
+      where: where as FindOptionsWhere<ObjectLiteral & T>[],
+      relations: relations as FindOptionsRelations<ObjectLiteral & T>,
     });
 
     const lastPage = Math.ceil(total / limit);
