@@ -1,8 +1,8 @@
 import { BadRequestException, Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
+import { randomUUID } from 'crypto';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
-import { randomUUID } from 'crypto';
 import { CommonController } from './common.controller';
 import { CommonService } from './common.service';
 

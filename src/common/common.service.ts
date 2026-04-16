@@ -123,4 +123,13 @@ export class CommonService {
       imageUrl: `${this.configService.get('PROTOCOL')}://${this.configService.get('HOST')}/public/images/${file.filename}`,
     };
   }
+
+  uploadImages(files: Express.Multer.File[]) {
+    return {
+      imageUrls: files.map(
+        (file) =>
+          `${this.configService.get('PROTOCOL')}://${this.configService.get('HOST')}/public/images/${file.filename}`,
+      ),
+    };
+  }
 }
