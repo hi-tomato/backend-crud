@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   FindOptionsOrder,
@@ -111,6 +111,16 @@ export class CommonService {
         nextCursor,
         hasNextPage,
       },
+    };
+  }
+
+  uploadImage(file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('파일이 존재하지 않습니다.');
+    }
+
+    return {
+      imageUrl: `${this.configService.get('PROTOCOL')}://${this.configService.get('HOST')}/public/images/${file.filename}`,
     };
   }
 }
