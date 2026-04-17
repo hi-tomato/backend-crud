@@ -4,7 +4,8 @@ import { randomUUID } from 'crypto';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { CommonController } from './common.controller';
-import { CommonService } from './common.service';
+import { PaginationService } from './pagination.service';
+import { UploadService } from './upload.service';
 
 @Module({
   imports: [
@@ -48,7 +49,7 @@ import { CommonService } from './common.service';
     }),
   ],
   controllers: [CommonController],
-  providers: [CommonService],
-  exports: [CommonService],
+  providers: [PaginationService, UploadService],
+  exports: [PaginationService, UploadService],
 })
 export class CommonModule {}
