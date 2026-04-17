@@ -22,7 +22,7 @@ import { CommentModule } from './comment/comment.module';
         port: config.get<number>('DB_PORT'),
         username: config.get<string>('DB_USERNAME'),
         password: config.get<string>('DB_PASSWORD'),
-        database: config.get<string>('DB_DATABASE'),
+        database: config.get<string>('DB_NAME'),
         autoLoadEntities: true,
         synchronize: true,
       }),
