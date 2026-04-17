@@ -1,9 +1,11 @@
 import { Body, Controller, Post } from '@nestjs/common';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -23,6 +25,13 @@ export class AuthController {
   }
 
   @Post('refreshToken')
+  @ApiBody({
+    schema: {
+      properties: {
+        refreshToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIs...' },
+      },
+    },
+  })
   refreshToken(@Body('refreshToken') refreshToken: string) {
     return this.authService.refreshToken(refreshToken);
   }
