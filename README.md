@@ -1,98 +1,257 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Backend CRUD - 커뮤니티 게시판 API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+NestJS로 구축된 커뮤니티 게시판 백엔드 API입니다.  
+프론트엔드(JavaScript, React 등) 연습용 서버로, **토마토**들이 실제 API와 통신하며 CRUD를 학습할 수 있습니다.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 주요 기능
 
-## Description
+- JWT 기반 회원가입/로그인 (Access Token + Refresh Token)
+- 게시글 CRUD (오프셋 페이지네이션 + 커서 페이지네이션 + 검색)
+- 댓글 CRUD (소프트 삭제)
+- 이미지 업로드 (로컬 저장 + MinIO Presigned URL)
+- 역할 기반 접근 제어 (ADMIN, USER, VISITOR)
+- 작성자 본인만 수정/삭제 가능
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 사전 준비
 
-## Project setup
+- **Node.js** 18 이상
+- **Yarn** (권장) 또는 npm
+- **Docker Desktop** ([Mac](https://docs.docker.com/desktop/setup/install/mac-install/) / [Windows](https://docs.docker.com/desktop/setup/install/windows-install/))
+
+## 시작하기
+
+### 1. 의존성 설치
 
 ```bash
-$ yarn install
+yarn install
 ```
 
-## Compile and run the project
+### 2. 환경변수 설정
 
 ```bash
-# development
-$ yarn run start
-
-# watch mode
-$ yarn run start:dev
-
-# production mode
-$ yarn run start:prod
+cp .env.example .env
 ```
 
-## Run tests
+> `.env` 파일이 생성됩니다. 기본값 그대로 사용해도 로컬 개발에 문제없습니다.
+> `JWT_SECRET`만 원하는 값으로 변경하세요.
+
+### 3. Docker 서비스 실행
+
+Docker Desktop이 실행 중인지 확인한 후:
 
 ```bash
-# unit tests
-$ yarn run test
-
-# e2e tests
-$ yarn run test:e2e
-
-# test coverage
-$ yarn run test:cov
+docker compose up -d
 ```
 
-## Deployment
+이 명령어로 아래 서비스가 시작됩니다:
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+| 서비스           | 포트                    | 설명              |
+| ------------- | --------------------- | --------------- |
+| PostgreSQL 16 | 5432                  | 메인 데이터베이스       |
+| MinIO         | 9000 (API), 9001 (콘솔) | 이미지 저장소 (S3 호환) |
+
+
+### 4. MinIO 버킷 생성 (이미지 업로드 사용 시)
+
+1. 브라우저에서 `http://localhost:9001` 접속
+2. ID: `minioadmin` / PW: `minioadmin` 으로 로그인
+3. 좌측 메뉴 **Buckets** > **Create Bucket** 클릭
+4. Bucket Name: `images` 입력 후 생성
+
+### 5. 서버 실행
 
 ```bash
-$ yarn install -g @nestjs/mau
-$ mau deploy
+# 개발 모드 (파일 변경 시 자동 재시작)
+yarn start:dev
+
+# 일반 실행
+yarn start
+
+# 프로덕션 빌드 후 실행
+yarn build && yarn start:prod
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+서버가 `http://localhost:3000`에서 실행됩니다.
 
-## Resources
+---
 
-Check out a few resources that may come in handy when working with NestJS:
+## API 엔드포인트
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### Auth (인증) - 토큰 불필요
 
-## Support
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+| Method | Endpoint               | Description | Body                                         |
+| ------ | ---------------------- | ----------- | -------------------------------------------- |
+| POST   | `/auth/register/email` | 회원가입        | `{ email, name, password, passwordConfirm }` |
+| POST   | `/auth/login/email`    | 로그인         | `{ email, password }`                        |
+| POST   | `/auth/refreshToken`   | 토큰 갱신       | `{ refreshToken }`                           |
 
-## Stay in touch
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Posts (게시글) - JWT 필요
 
-## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+| Method | Endpoint        | Description         |
+| ------ | --------------- | ------------------- |
+| POST   | `/posts`        | 게시글 작성              |
+| GET    | `/posts`        | 게시글 목록 (오프셋 페이지네이션) |
+| GET    | `/posts/cursor` | 게시글 목록 (커서 페이지네이션)  |
+| GET    | `/posts/:id`    | 게시글 상세 조회           |
+| PATCH  | `/posts/:id`    | 게시글 수정 (작성자만)       |
+| DELETE | `/posts/:id`    | 게시글 삭제 (작성자만)       |
+
+
+### Comments (댓글) - JWT 필요
+
+
+| Method | Endpoint                      | Description  |
+| ------ | ----------------------------- | ------------ |
+| POST   | `/posts/:postId/comments`     | 댓글 작성        |
+| GET    | `/posts/:postId/comments/:id` | 댓글 조회        |
+| PATCH  | `/posts/:postId/comments/:id` | 댓글 수정 (작성자만) |
+| DELETE | `/posts/:postId/comments/:id` | 댓글 삭제 (작성자만) |
+
+
+### Users (사용자) - JWT 필요
+
+
+| Method | Endpoint     | Description |
+| ------ | ------------ | ----------- |
+| GET    | `/users`     | 전체 사용자 목록   |
+| GET    | `/users/:id` | 사용자 상세 조회   |
+| POST   | `/users`     | 사용자 생성      |
+| PATCH  | `/users/:id` | 사용자 수정      |
+| DELETE | `/users/:id` | 사용자 삭제      |
+
+
+### Common (파일 업로드) - 토큰 불필요
+
+
+| Method | Endpoint                 | Description                       |
+| ------ | ------------------------ | --------------------------------- |
+| POST   | `/common/image`          | 이미지 업로드 (단일, multipart/form-data) |
+| POST   | `/common/images`         | 이미지 업로드 (최대 5개)                   |
+| POST   | `/common/presigned-url`  | Presigned URL 발급 (단일)             |
+| POST   | `/common/presigned-urls` | Presigned URL 발급 (다중)             |
+
+
+### 인증 방법
+
+로그인 후 받은 `accessToken`을 요청 헤더에 포함합니다:
+
+```
+Authorization: Bearer <accessToken>
+```
+
+---
+
+## 페이지네이션
+
+### 오프셋 페이지네이션 (`GET /posts`)
+
+
+| 파라미터        | 기본값   | 설명                             |
+| ----------- | ----- | ------------------------------ |
+| `page`      | 1     | 페이지 번호                         |
+| `limit`     | 20    | 한 페이지당 게시글 수 (10~100)          |
+| `__order`   | DESC  | 정렬 방향 (DESC, ASC)              |
+| `__orderBy` | title | 정렬 기준 (title, content, author) |
+| `__search`  | -     | 검색어 (제목, 내용, 작성자 이름 검색)        |
+
+
+### 커서 페이지네이션 (`GET /posts/cursor`)
+
+
+| 파라미터       | 기본값  | 설명                 |
+| ---------- | ---- | ------------------ |
+| `__cursor` | 0    | 커서 위치 (마지막 게시글 ID) |
+| `__limit`  | 20   | 가져올 게시글 수          |
+| `__order`  | DESC | 정렬 방향 (DESC, ASC)  |
+
+
+---
+
+## 환경 변수
+
+
+| 변수                 | 설명              | 기본값                     |
+| ------------------ | --------------- | ----------------------- |
+| `PORT`             | 서버 포트           | `3000`                  |
+| `PROTOCOL`         | 프로토콜            | `http`                  |
+| `HOST`             | 호스트 주소          | `localhost:3000`        |
+| `DB_HOST`          | PostgreSQL 호스트  | `localhost`             |
+| `DB_PORT`          | PostgreSQL 포트   | `5432`                  |
+| `DB_USERNAME`      | PostgreSQL 사용자  | `postgres`              |
+| `DB_PASSWORD`      | PostgreSQL 비밀번호 | `postgres`              |
+| `DB_NAME`          | 데이터베이스 이름       | `postgres`              |
+| `JWT_SECRET`       | JWT 서명 시크릿      | -                       |
+| `BCRYPT_ROUNDS`    | bcrypt 해싱 라운드   | `10`                    |
+| `MINIO_ENDPOINT`   | MinIO 엔드포인트     | `http://localhost:9000` |
+| `MINIO_ACCESS_KEY` | MinIO 접근 키      | `minioadmin`            |
+| `MINIO_SECRET_KEY` | MinIO 비밀 키      | `minioadmin`            |
+| `MINIO_BUCKET`     | MinIO 버킷 이름     | `images`                |
+
+
+---
+
+## npm Scripts
+
+
+| 명령어                | 설명             |
+| ------------------ | -------------- |
+| `yarn start`       | 서버 실행          |
+| `yarn start:dev`   | 개발 모드 (watch)  |
+| `yarn start:debug` | 디버그 모드         |
+| `yarn start:prod`  | 프로덕션 실행 (빌드 후) |
+| `yarn build`       | TypeScript 빌드  |
+| `yarn lint`        | ESLint 실행      |
+| `yarn format`      | Prettier 포맷팅   |
+| `yarn test`        | 단위 테스트         |
+| `yarn test:e2e`    | E2E 테스트        |
+| `yarn test:cov`    | 테스트 커버리지       |
+
+
+---
+
+## 프로젝트 구조
+
+```
+src/
+├── auth/              # 인증 (JWT, 가드, 데코레이터)
+│   ├── decorators/    # @CurrentUser, @Roles
+│   ├── guards/        # JwtAuthGuard, RolesGuard
+│   ├── dto/           # RegisterDto, LoginDto
+│   └── types/         # JwtPayload 타입
+├── comment/           # 댓글 CRUD
+├── common/            # 공통 유틸리티
+│   ├── const/         # 에러 메시지, enum 상수
+│   ├── dto/           # 페이지네이션 DTO
+│   ├── interceptor/   # 응답 포맷 인터셉터
+│   └── utils/         # assertFound, assertOwner
+├── posts/             # 게시글 CRUD
+├── users/             # 사용자 관리
+├── app.module.ts      # 루트 모듈
+└── main.ts            # 엔트리포인트
+```
+
+---
+
+## 학습 자료
+
+`docs/` 디렉토리에 NestJS 학습 가이드가 준비되어 있습니다:
+
+- 아키텍처 개요
+- 핵심 개념 (DI, 데코레이터, 요청 라이프사이클)
+- CRUD 패턴
+- 페이지네이션 구현
+- 이미지 업로드
+- 리팩토링 패턴
+
+---
+
+## 참고 사항
+
+- `synchronize: true`가 설정되어 있어 엔티티 변경 시 DB 스키마가 자동으로 동기화됩니다 (개발 전용 설정).
+- 지원하는 이미지 형식: `.jpg`, `.jpeg`, `.png`, `.webp` (최대 5MB)
+- 모든 API 응답은 `{ success: true, data: ... }` 형태로 래핑됩니다.
+
