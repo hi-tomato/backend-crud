@@ -34,7 +34,7 @@ export class CommentService {
 
   getCommentById(id: number) {
     return this.commentRepository.findOne({
-      where: { id },
+      where: { id, isDeleted: false },
       relations: { author: true, post: true },
     });
   }
@@ -42,7 +42,7 @@ export class CommentService {
   async updateComment(id: number, dto: UpdateCommentDto, userId: number) {
     const comment = assertFound(
       await this.commentRepository.findOne({
-        where: { id },
+        where: { id, isDeleted: false },
         relations: { author: true },
       }),
       ERROR_MESSAGES.COMMENT.NOT_FOUND,
@@ -58,7 +58,7 @@ export class CommentService {
   async deleteComment(id: number, userId: number) {
     const comment = assertFound(
       await this.commentRepository.findOne({
-        where: { id },
+        where: { id, isDeleted: false },
         relations: { author: true },
       }),
       ERROR_MESSAGES.COMMENT.NOT_FOUND,
