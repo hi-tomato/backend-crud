@@ -3,9 +3,11 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { CommentEntity } from '../../comment/entities/comment.entity';
 import { User } from '../../users/entities/user.entity';
 
 @Entity()
@@ -30,4 +32,7 @@ export class PostModel {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => CommentEntity, (comment) => comment.post)
+  comments: CommentEntity[];
 }

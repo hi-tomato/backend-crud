@@ -6,6 +6,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { CommentEntity } from '../../comment/entities/comment.entity';
 import { PostModel } from '../../posts/entities/post.entity';
 import { UserRole } from '../const/userRole';
 
@@ -35,4 +36,7 @@ export class User {
 
   @OneToMany(() => PostModel, (post) => post.author)
   posts: PostModel[];
+
+  @OneToMany(() => CommentEntity, (comment) => comment.author)
+  comments: CommentEntity[];
 }
