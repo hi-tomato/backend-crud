@@ -1,10 +1,8 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ERROR_MESSAGES } from '../common/const/error-messages';
+import { assertFound, assertOwner } from '../common/utils/assert';
 import { PostModel } from '../posts/entities/post.entity';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
@@ -20,24 +18,15 @@ export class CommentService {
   ) {}
 
   async createComment(postId: number, dto: CreateCommentDto, userId: number) {
-    const post = await this.postRepository.findOne({
-      where: {
-        id: postId,
-      },
-    });
-
-    if (post === null) {
-      throw new NotFoundException('Post not found');
-    }
+    assertFound(
+      await this.postRepository.findOne({ where: { id: postId } }),
+      ERROR_MESSAGES.POST.NOT_FOUND,
+    );
 
     const comment = this.commentRepository.create({
       content: dto.content,
-      post: {
-        id: postId,
-      },
-      author: {
-        id: userId,
-      },
+      post: { id: postId },
+      author: { id: userId },
     });
 
     return this.commentRepository.save(comment);
@@ -46,26 +35,20 @@ export class CommentService {
   getCommentById(id: number) {
     return this.commentRepository.findOne({
       where: { id },
-      relations: {
-        author: true,
-        post: true,
-      },
+      relations: { author: true, post: true },
     });
   }
 
   async updateComment(id: number, dto: UpdateCommentDto, userId: number) {
-    const comment = await this.commentRepository.findOne({
-      where: { id },
-      relations: { author: true },
-    });
+    const comment = assertFound(
+      await this.commentRepository.findOne({
+        where: { id },
+        relations: { author: true },
+      }),
+      ERROR_MESSAGES.COMMENT.NOT_FOUND,
+    );
 
-    if (!comment) {
-      throw new NotFoundException('Comment not found');
-    }
-
-    if (comment.author.id !== userId) {
-      throw new ForbiddenException('You are not the author of this comment');
-    }
+    assertOwner(comment.author.id, userId, ERROR_MESSAGES.COMMENT.FORBIDDEN);
 
     this.commentRepository.merge(comment, dto);
 
@@ -73,18 +56,15 @@ export class CommentService {
   }
 
   async deleteComment(id: number, userId: number) {
-    const comment = await this.commentRepository.findOne({
-      where: { id },
-      relations: { author: true },
-    });
+    const comment = assertFound(
+      await this.commentRepository.findOne({
+        where: { id },
+        relations: { author: true },
+      }),
+      ERROR_MESSAGES.COMMENT.NOT_FOUND,
+    );
 
-    if (!comment) {
-      throw new NotFoundException('Comment not found');
-    }
-
-    if (comment.author.id !== userId) {
-      throw new ForbiddenException('You are not the author of this comment');
-    }
+    assertOwner(comment.author.id, userId, ERROR_MESSAGES.COMMENT.FORBIDDEN);
 
     await this.commentRepository.update(id, { isDeleted: true });
 

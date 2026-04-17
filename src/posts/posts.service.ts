@@ -1,13 +1,11 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CommonService } from '../common/common.service';
+import { ERROR_MESSAGES } from '../common/const/error-messages';
 import { CursorPaginationDto } from '../common/dto/cursor-pagination.dto';
 import { OffsetPaginationDto } from '../common/dto/offset-pagination.dto';
+import { PaginationService } from '../common/pagination.service';
+import { assertFound, assertOwner } from '../common/utils/assert';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PostModel } from './entities/post.entity';
@@ -17,26 +15,17 @@ export class PostsService {
   constructor(
     @InjectRepository(PostModel)
     private readonly postsRepository: Repository<PostModel>,
-    private readonly commonService: CommonService,
+    private readonly paginationService: PaginationService,
   ) {}
 
-  async findPostOrFail(postId: number): Promise<PostModel> {
-    const post = await this.postsRepository.findOne({
-      where: { id: postId },
-      relations: { author: true },
-    });
-
-    if (!post) {
-      throw new NotFoundException('Post not found');
-    }
-
-    return post;
-  }
-
-  assertPostOwner(post: PostModel, authorId: number) {
-    if (post.author.id !== authorId) {
-      throw new ForbiddenException('You are not the author of this post');
-    }
+  private async findPostOrFail(postId: number): Promise<PostModel> {
+    return assertFound(
+      await this.postsRepository.findOne({
+        where: { id: postId },
+        relations: { author: true },
+      }),
+      ERROR_MESSAGES.POST.NOT_FOUND,
+    );
   }
 
   async createPost(authorId: number, dto: CreatePostDto) {
@@ -49,13 +38,15 @@ export class PostsService {
   }
 
   getPosts(dto: OffsetPaginationDto) {
-    return this.commonService.paginate<PostModel>(dto, this.postsRepository, {
-      author: true,
-    });
+    return this.paginationService.paginate<PostModel>(
+      dto,
+      this.postsRepository,
+      { author: true },
+    );
   }
 
   getPostsCursor(dto: CursorPaginationDto) {
-    return this.commonService.cursorPaginate<PostModel>(
+    return this.paginationService.cursorPaginate<PostModel>(
       dto,
       this.postsRepository,
       ['author'],
@@ -69,7 +60,7 @@ export class PostsService {
   async updatePostById(postId: number, authorId: number, dto: UpdatePostDto) {
     const post = await this.findPostOrFail(postId);
 
-    this.assertPostOwner(post, authorId);
+    assertOwner(post.author.id, authorId, ERROR_MESSAGES.POST.FORBIDDEN);
 
     const updatedPost = this.postsRepository.merge(post, dto);
 
@@ -79,7 +70,7 @@ export class PostsService {
   async deletePostById(postId: number, authorId: number) {
     const post = await this.findPostOrFail(postId);
 
-    this.assertPostOwner(post, authorId);
+    assertOwner(post.author.id, authorId, ERROR_MESSAGES.POST.FORBIDDEN);
 
     return await this.postsRepository.delete(postId);
   }

@@ -1,6 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ERROR_MESSAGES } from '../common/const/error-messages';
+import { assertFound } from '../common/utils/assert';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
@@ -17,13 +19,10 @@ export class UsersService {
   }
 
   async findOne(id: number) {
-    const user = await this.usersRepository.findOneBy({ id });
-
-    if (!user) {
-      throw new NotFoundException(`검색하신 유저 ${id}가 존재하지 않습니다.`);
-    }
-
-    return user;
+    return assertFound(
+      await this.usersRepository.findOneBy({ id }),
+      ERROR_MESSAGES.USER.NOT_FOUND,
+    );
   }
 
   create(dto: CreateUserDto) {
@@ -33,21 +32,15 @@ export class UsersService {
   }
 
   async delete(id: number) {
-    const result = await this.usersRepository.delete(id);
+    await this.findOne(id);
 
-    if (result.affected === 0) {
-      throw new NotFoundException(`검색하신 유저 ${id}가 존재하지 않습니다.`);
-    }
-
-    return result;
+    return this.usersRepository.delete(id);
   }
 
   async update(id: number, dto: UpdateUserDto) {
-    const result = await this.usersRepository.update(id, dto);
+    await this.findOne(id);
 
-    if (result.affected === 0) {
-      throw new NotFoundException(`검색하신 유저 ${id}가 존재하지 않습니다.`);
-    }
+    await this.usersRepository.update(id, dto);
 
     return this.findOne(id);
   }

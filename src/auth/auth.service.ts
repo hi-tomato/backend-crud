@@ -8,6 +8,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { ERROR_MESSAGES } from '../common/const/error-messages';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -36,11 +37,11 @@ export class AuthService {
     const existingUser = await this.usersService.findOneByEmail(email);
 
     if (existingUser) {
-      throw new ConflictException('해당 이메일은 이미 존재하는 이메일 입니다.');
+      throw new ConflictException(ERROR_MESSAGES.USER.EMAIL_EXISTS);
     }
 
     if (password !== passwordConfirm) {
-      throw new BadRequestException('입력하신 비밀번호가 일치하지 않습니다.');
+      throw new BadRequestException(ERROR_MESSAGES.USER.PASSWORD_MISMATCH);
     }
 
     const hashedPassword = await bcrypt.hash(
@@ -65,13 +66,13 @@ export class AuthService {
     const user = await this.usersService.findOneByEmail(email);
 
     if (!user) {
-      throw new NotFoundException('해당 이메일은 존재하지 않는 이메일입니다.');
+      throw new NotFoundException(ERROR_MESSAGES.USER.NOT_FOUND);
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      throw new BadRequestException('입력하신 비밀번호가 일치하지 않습니다.');
+      throw new BadRequestException(ERROR_MESSAGES.USER.PASSWORD_MISMATCH);
     }
 
     return this.generateTokens(user.id, user.email);
@@ -85,7 +86,7 @@ export class AuthService {
       }>(refreshToken);
       return this.generateTokens(payload.userId, payload.email);
     } catch {
-      throw new UnauthorizedException('Refresh token이 유효하지 않습니다.');
+      throw new UnauthorizedException(ERROR_MESSAGES.COMMON.INVALID_TOKEN);
     }
   }
 }
