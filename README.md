@@ -146,6 +146,51 @@ Authorization: Bearer <accessToken>
 
 ---
 
+## 응답 형식
+
+### 성공 응답
+
+```json
+{
+  "success": true,
+  "data": { ... },
+  "timestamp": "2026-04-17T12:00:00.000Z"
+}
+```
+
+### 에러 응답
+
+```json
+{
+  "success": false,
+  "statusCode": 404,
+  "code": "POST_NOT_FOUND",
+  "message": "게시글을 찾을 수 없습니다",
+  "timestamp": "2026-04-17T12:00:00.000Z"
+}
+```
+
+프론트엔드에서 `code` 값으로 에러를 분기 처리할 수 있습니다.
+
+### 에러 코드 목록
+
+| 코드 | 상태 코드 | 설명 |
+|------|-----------|------|
+| `COMMON_UNAUTHORIZED` | 401 | 토큰 없음 |
+| `COMMON_INVALID_TOKEN` | 401 | 토큰 만료 또는 유효하지 않음 |
+| `COMMON_FORBIDDEN` | 403 | 권한 없음 (역할 부족) |
+| `COMMON_FILE_NOT_FOUND` | 400 | 업로드 파일 누락 |
+| `COMMON_UNSUPPORTED_FILE_TYPE` | 400 | 지원하지 않는 파일 형식 |
+| `USER_NOT_FOUND` | 404 | 사용자를 찾을 수 없음 |
+| `USER_EMAIL_EXISTS` | 409 | 이미 사용 중인 이메일 |
+| `USER_PASSWORD_MISMATCH` | 400 | 비밀번호 불일치 |
+| `POST_NOT_FOUND` | 404 | 게시글을 찾을 수 없음 |
+| `POST_FORBIDDEN` | 403 | 게시글 작성자가 아님 |
+| `COMMENT_NOT_FOUND` | 404 | 댓글을 찾을 수 없음 |
+| `COMMENT_FORBIDDEN` | 403 | 댓글 작성자가 아님 |
+
+---
+
 ## 페이지네이션
 
 ### 오프셋 페이지네이션 (`GET /posts`)
