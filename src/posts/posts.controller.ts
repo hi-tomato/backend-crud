@@ -59,7 +59,7 @@ export class PostsController {
   @Delete(':id')
   deletePostById(
     @Param('id', ParseIntPipe) id: number,
-    @CurrentUser() user: { userId: number },
+    @CurrentUser() user: JwtPayload,
   ) {
     return this.postsService.deletePostById(id, user.userId);
   }

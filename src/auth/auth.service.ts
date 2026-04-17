@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { ERROR_MESSAGES } from '../common/const/error-messages';
+import { UserRole } from '../users/const/userRole';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -21,8 +22,8 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  generateTokens(userId: number, email: string) {
-    const payload = { userId, email };
+  generateTokens(userId: number, email: string, role: UserRole) {
+    const payload = { userId, email, role };
 
     const accessToken = this.jwtService.sign(payload, { expiresIn: '1h' });
 
@@ -55,7 +56,7 @@ export class AuthService {
       password: hashedPassword,
     });
 
-    const token = this.generateTokens(newUser.id, newUser.email);
+    const token = this.generateTokens(newUser.id, newUser.email, newUser.role);
 
     return token;
   }
@@ -75,7 +76,7 @@ export class AuthService {
       throw new BadRequestException(ERROR_MESSAGES.USER.PASSWORD_MISMATCH);
     }
 
-    return this.generateTokens(user.id, user.email);
+    return this.generateTokens(user.id, user.email, user.role);
   }
 
   async refreshToken(refreshToken: string) {
@@ -83,8 +84,9 @@ export class AuthService {
       const payload = await this.jwtService.verifyAsync<{
         userId: number;
         email: string;
+        role: UserRole;
       }>(refreshToken);
-      return this.generateTokens(payload.userId, payload.email);
+      return this.generateTokens(payload.userId, payload.email, payload.role);
     } catch {
       throw new UnauthorizedException(ERROR_MESSAGES.COMMON.INVALID_TOKEN);
     }

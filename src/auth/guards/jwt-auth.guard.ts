@@ -7,6 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ERROR_MESSAGES } from '../../common/const/error-messages';
 import type { JwtPayload } from '../types/jwt-payload.type';
 
 type RequestWithUser = Request & { user: JwtPayload };
@@ -22,7 +23,7 @@ export class JwtAuthGuard implements CanActivate {
     const token = request.headers.authorization?.split(' ')[1];
 
     if (!token) {
-      throw new UnauthorizedException('No token provided');
+      throw new UnauthorizedException(ERROR_MESSAGES.COMMON.UNAUTHORIZED);
     }
 
     try {
@@ -30,7 +31,7 @@ export class JwtAuthGuard implements CanActivate {
 
       request.user = payload;
     } catch {
-      throw new UnauthorizedException('Invalid token');
+      throw new UnauthorizedException(ERROR_MESSAGES.COMMON.INVALID_TOKEN);
     }
 
     return true;
