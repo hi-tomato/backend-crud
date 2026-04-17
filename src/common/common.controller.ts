@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Post,
   UploadedFile,
@@ -7,6 +8,8 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { CommonService } from './common.service';
+import { GetPresignedUrlDto } from './dto/presigned-url.dto';
+import { GetPresignedUrlsDto } from './dto/presigned-urls.dto';
 
 @Controller('common')
 export class CommonController {
@@ -22,5 +25,15 @@ export class CommonController {
   @UseInterceptors(FilesInterceptor('images', 5))
   uploadImages(@UploadedFiles() files: Express.Multer.File[]) {
     return this.commonService.uploadImages(files);
+  }
+
+  @Post('presigned-url')
+  getPresignedUrl(@Body() dto: GetPresignedUrlDto) {
+    return this.commonService.getPresignedUrl(dto.fileName);
+  }
+
+  @Post('presigned-urls')
+  getPresignedUrls(@Body() dto: GetPresignedUrlsDto) {
+    return this.commonService.getPresignedUrls(dto.fileNames);
   }
 }
