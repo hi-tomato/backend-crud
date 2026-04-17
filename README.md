@@ -1,7 +1,7 @@
 # Backend CRUD - 커뮤니티 게시판 API
 
-NestJS로 구축된 커뮤니티 게시판 백엔드 API입니다.  
-프론트엔드(JavaScript, React 등) 연습용 서버로, **토마토**들이 실제 API와 통신하며 CRUD를 학습할 수 있습니다.
+NestJS로 구축된 SNS 프로젝트 백엔드 API입니다.  
+프론트엔드(JavaScript, React 등) 연습용 서버로, 새싹 **토마토**들이 실제 API와 통신하며 CRUD를 학습할 수 있습니다.
 
 ## 주요 기능
 
@@ -63,6 +63,7 @@ docker compose up -d
 
 ```bash
 # 개발 모드 (파일 변경 시 자동 재시작)
+# 스웨거 문서 실행 링크 (http://localhost:3000/api-docs)
 yarn start:dev
 
 # 일반 실행

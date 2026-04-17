@@ -24,8 +24,8 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ResponseInterceptor<unknown>());
 
   const config = new DocumentBuilder()
-    .setTitle('커뮤니티 게시판 API')
-    .setDescription('토마토들을 위한 커뮤니티 게시판 백엔드 API')
+    .setTitle('ToyProject Community Backend API')
+    .setDescription('새싹 토마토들을 위한 커뮤니티 백엔드 API')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
