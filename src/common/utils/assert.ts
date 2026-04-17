@@ -1,9 +1,10 @@
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import type { ErrorCode } from '../const/error-codes';
+import { BusinessException } from '../exception/business.exception';
 
 /** 존재 검증 */
-export function assertFound<T>(entity: T | null, message: string): T {
+export function assertFound<T>(entity: T | null, errorCode: ErrorCode): T {
   if (entity === null || entity === undefined) {
-    throw new NotFoundException(message);
+    throw new BusinessException(errorCode);
   } else {
     return entity;
   }
@@ -13,9 +14,9 @@ export function assertFound<T>(entity: T | null, message: string): T {
 export function assertOwner(
   entityUserId: number,
   currentUserId: number,
-  message: string,
+  errorCode: ErrorCode,
 ): void {
   if (entityUserId !== currentUserId) {
-    throw new ForbiddenException(message);
+    throw new BusinessException(errorCode);
   }
 }

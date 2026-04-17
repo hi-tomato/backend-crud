@@ -1,13 +1,9 @@
 import type { Request } from 'express';
 
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ERROR_MESSAGES } from '../../common/const/error-messages';
+import { ERROR_CODES } from '../../common/const/error-codes';
+import { BusinessException } from '../../common/exception/business.exception';
 import type { JwtPayload } from '../types/jwt-payload.type';
 
 type RequestWithUser = Request & { user: JwtPayload };
@@ -23,7 +19,7 @@ export class JwtAuthGuard implements CanActivate {
     const token = request.headers.authorization?.split(' ')[1];
 
     if (!token) {
-      throw new UnauthorizedException(ERROR_MESSAGES.COMMON.UNAUTHORIZED);
+      throw new BusinessException(ERROR_CODES.COMMON.UNAUTHORIZED);
     }
 
     try {
@@ -31,7 +27,7 @@ export class JwtAuthGuard implements CanActivate {
 
       request.user = payload;
     } catch {
-      throw new UnauthorizedException(ERROR_MESSAGES.COMMON.INVALID_TOKEN);
+      throw new BusinessException(ERROR_CODES.COMMON.INVALID_TOKEN);
     }
 
     return true;

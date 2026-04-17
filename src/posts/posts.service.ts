@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ERROR_MESSAGES } from '../common/const/error-messages';
+import { ERROR_CODES } from '../common/const/error-codes';
 import { CursorPaginationDto } from '../common/dto/cursor-pagination.dto';
 import { OffsetPaginationDto } from '../common/dto/offset-pagination.dto';
 import { PaginationService } from '../common/pagination.service';
@@ -24,7 +24,7 @@ export class PostsService {
         where: { id: postId },
         relations: { author: true },
       }),
-      ERROR_MESSAGES.POST.NOT_FOUND,
+      ERROR_CODES.POST.NOT_FOUND,
     );
   }
 
@@ -60,7 +60,7 @@ export class PostsService {
   async updatePostById(postId: number, authorId: number, dto: UpdatePostDto) {
     const post = await this.findPostOrFail(postId);
 
-    assertOwner(post.author.id, authorId, ERROR_MESSAGES.POST.FORBIDDEN);
+    assertOwner(post.author.id, authorId, ERROR_CODES.POST.FORBIDDEN);
 
     const updatedPost = this.postsRepository.merge(post, dto);
 
@@ -70,7 +70,7 @@ export class PostsService {
   async deletePostById(postId: number, authorId: number) {
     const post = await this.findPostOrFail(postId);
 
-    assertOwner(post.author.id, authorId, ERROR_MESSAGES.POST.FORBIDDEN);
+    assertOwner(post.author.id, authorId, ERROR_CODES.POST.FORBIDDEN);
 
     return await this.postsRepository.delete(postId);
   }

@@ -1,10 +1,11 @@
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import { extname } from 'path';
-import { ERROR_MESSAGES } from './const/error-messages';
+import { ERROR_CODES } from './const/error-codes';
+import { BusinessException } from './exception/business.exception';
 
 @Injectable()
 export class UploadService {
@@ -25,7 +26,7 @@ export class UploadService {
 
   uploadImage(file: Express.Multer.File) {
     if (!file) {
-      throw new BadRequestException(ERROR_MESSAGES.COMMON.FILE_NOT_FOUND);
+      throw new BusinessException(ERROR_CODES.COMMON.FILE_NOT_FOUND);
     }
 
     return {

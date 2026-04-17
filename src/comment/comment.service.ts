@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ERROR_MESSAGES } from '../common/const/error-messages';
+import { ERROR_CODES } from '../common/const/error-codes';
 import { assertFound, assertOwner } from '../common/utils/assert';
 import { PostModel } from '../posts/entities/post.entity';
 import { CreateCommentDto } from './dto/create-comment.dto';
@@ -20,7 +20,7 @@ export class CommentService {
   async createComment(postId: number, dto: CreateCommentDto, userId: number) {
     assertFound(
       await this.postRepository.findOne({ where: { id: postId } }),
-      ERROR_MESSAGES.POST.NOT_FOUND,
+      ERROR_CODES.POST.NOT_FOUND,
     );
 
     const comment = this.commentRepository.create({
@@ -45,10 +45,10 @@ export class CommentService {
         where: { id, isDeleted: false },
         relations: { author: true },
       }),
-      ERROR_MESSAGES.COMMENT.NOT_FOUND,
+      ERROR_CODES.COMMENT.NOT_FOUND,
     );
 
-    assertOwner(comment.author.id, userId, ERROR_MESSAGES.COMMENT.FORBIDDEN);
+    assertOwner(comment.author.id, userId, ERROR_CODES.COMMENT.FORBIDDEN);
 
     this.commentRepository.merge(comment, dto);
 
@@ -61,10 +61,10 @@ export class CommentService {
         where: { id, isDeleted: false },
         relations: { author: true },
       }),
-      ERROR_MESSAGES.COMMENT.NOT_FOUND,
+      ERROR_CODES.COMMENT.NOT_FOUND,
     );
 
-    assertOwner(comment.author.id, userId, ERROR_MESSAGES.COMMENT.FORBIDDEN);
+    assertOwner(comment.author.id, userId, ERROR_CODES.COMMENT.FORBIDDEN);
 
     await this.commentRepository.update(id, { isDeleted: true });
 

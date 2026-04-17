@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ERROR_MESSAGES } from '../common/const/error-messages';
+import { ERROR_CODES } from '../common/const/error-codes';
 import { assertFound } from '../common/utils/assert';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -21,7 +21,7 @@ export class UsersService {
   async findOne(id: number) {
     return assertFound(
       await this.usersRepository.findOneBy({ id }),
-      ERROR_MESSAGES.USER.NOT_FOUND,
+      ERROR_CODES.USER.NOT_FOUND,
     );
   }
 

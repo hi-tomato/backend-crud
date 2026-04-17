@@ -1,14 +1,9 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { ERROR_MESSAGES } from '../common/const/error-messages';
+import { ERROR_CODES } from '../common/const/error-codes';
+import { BusinessException } from '../common/exception/business.exception';
 import { UserRole } from '../users/const/userRole';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
@@ -38,11 +33,11 @@ export class AuthService {
     const existingUser = await this.usersService.findOneByEmail(email);
 
     if (existingUser) {
-      throw new ConflictException(ERROR_MESSAGES.USER.EMAIL_EXISTS);
+      throw new BusinessException(ERROR_CODES.USER.EMAIL_EXISTS);
     }
 
     if (password !== passwordConfirm) {
-      throw new BadRequestException(ERROR_MESSAGES.USER.PASSWORD_MISMATCH);
+      throw new BusinessException(ERROR_CODES.USER.PASSWORD_MISMATCH);
     }
 
     const hashedPassword = await bcrypt.hash(
@@ -67,13 +62,13 @@ export class AuthService {
     const user = await this.usersService.findOneByEmail(email);
 
     if (!user) {
-      throw new NotFoundException(ERROR_MESSAGES.USER.NOT_FOUND);
+      throw new BusinessException(ERROR_CODES.USER.NOT_FOUND);
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      throw new BadRequestException(ERROR_MESSAGES.USER.PASSWORD_MISMATCH);
+      throw new BusinessException(ERROR_CODES.USER.PASSWORD_MISMATCH);
     }
 
     return this.generateTokens(user.id, user.email, user.role);
@@ -88,7 +83,7 @@ export class AuthService {
       }>(refreshToken);
       return this.generateTokens(payload.userId, payload.email, payload.role);
     } catch {
-      throw new UnauthorizedException(ERROR_MESSAGES.COMMON.INVALID_TOKEN);
+      throw new BusinessException(ERROR_CODES.COMMON.INVALID_TOKEN);
     }
   }
 }
